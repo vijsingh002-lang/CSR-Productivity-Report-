@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CSR productivity report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF0F4; --panel:#FFFFFF; --panel-2:#F6F8FB; --line:#D6DCE4; --line-strong:#B9C2CE;
+  --ink:#14213D; --muted:#5A6478; --navy:#1F3864; --navy-ink:#FFFFFF;
+  --tickets:#C55A11; --calls:#3B7D23; --direct:#2F6DB5;
+  --tickets-soft:#FBE7D9; --calls-soft:#E2F0DA; --direct-soft:#DCE8F6;
+  --above:#1E6B34; --above-bg:#D7F0DD; --meeting:#8A5A00; --meeting-bg:#FFF0C7; --below:#A11B2B; --below-bg:#FBDADF;
+  --focus:#2F6DB5; --warn-bg:#FFF6DB; --warn-line:#E8C766;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1524; --panel:#161F33; --panel-2:#1B2640; --line:#2A3654; --line-strong:#3A4870;
+    --ink:#E7ECF5; --muted:#9BA7BF; --navy:#2B4A80; --navy-ink:#FFFFFF;
+    --tickets:#EE9356; --calls:#78C457; --direct:#71A9F0;
+    --tickets-soft:#3A2617; --calls-soft:#1E3318; --direct-soft:#182B47;
+    --above:#86DB9B; --above-bg:#183A23; --meeting:#F2C766; --meeting-bg:#3A2E10; --below:#F59AA6; --below-bg:#45181F;
+    --focus:#71A9F0; --warn-bg:#352B10; --warn-line:#7A6320;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1524; --panel:#161F33; --panel-2:#1B2640; --line:#2A3654; --line-strong:#3A4870;
+  --ink:#E7ECF5; --muted:#9BA7BF; --navy:#2B4A80; --navy-ink:#FFFFFF;
+  --tickets:#EE9356; --calls:#78C457; --direct:#71A9F0;
+  --tickets-soft:#3A2617; --calls-soft:#1E3318; --direct-soft:#182B47;
+  --above:#86DB9B; --above-bg:#183A23; --meeting:#F2C766; --meeting-bg:#3A2E10; --below:#F59AA6; --below-bg:#45181F;
+  --focus:#71A9F0; --warn-bg:#352B10; --warn-line:#7A6320;
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 64px}
+h1{font-size:clamp(26px,4vw,36px);line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-0.01em}
+h2{font-size:19px;margin:0 0 12px;font-weight:600}
+h3{font-size:15px;margin:0 0 8px;font-weight:600}
+p{margin:0 0 10px}
+.lede{color:var(--muted);max-width:68ch}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-strong);background:var(--panel);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.small{padding:4px 10px;font-size:13px}
+.link{background:none;border:0;padding:0;color:var(--direct);text-decoration:underline;cursor:pointer}
+
+/* intake */
+.intake{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;margin-top:22px}
+@media (max-width:820px){.intake{grid-template-columns:1fr}}
+.drop{border:2px dashed var(--line-strong);border-radius:14px;background:var(--panel);padding:26px;display:flex;flex-direction:column;justify-content:center;gap:12px;min-height:220px;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--direct);background:var(--direct-soft)}
+.drop > strong{font-size:18px}
+.drop .hint{color:var(--muted);font-size:13px}
+.files{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.files li{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px}
+.files li span{overflow-wrap:anywhere}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:460px){.slots{grid-template-columns:1fr}}
+.slot{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--line-strong);border-radius:10px;padding:12px 14px;min-height:96px}
+.slot.ready{border-left-color:var(--calls)}
+.slot .name{font-weight:600}
+.slot .state{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.slot.ready .state{color:var(--ink)}
+.slot .tick{float:right;font-size:13px;font-weight:600;color:var(--muted)}
+.slot.ready .tick{color:var(--calls)}
+.notice{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:10px 14px;margin-top:14px;font-size:14px}
+.notice ul{margin:6px 0 0 18px;padding:0}
+
+/* results */
+.results{margin-top:34px}
+.bar-top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:20px}
+.bar-top .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.bar-top label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+select,input[type=number]{border:1px solid var(--line-strong);background:var(--panel);border-radius:8px;padding:7px 10px}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:28px}
+@media (max-width:900px){.summary{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.summary{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+table{border-collapse:collapse;width:100%}
+.mini td,.mini th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+.mini td.n,.mini th.n{text-align:right}
+.mini tr.total td{font-weight:700;border-bottom:0;border-top:2px solid var(--ink)}
+.mini th{color:var(--muted);font-weight:500;font-size:13px}
+
+/* ranking — the signature element */
+.rank-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:baseline}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.ranking{list-style:none;margin:10px 0 30px;padding:0;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.ranking li{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) 64px 170px;gap:14px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.ranking li:last-child{border-bottom:0}
+.ranking .pos{font-size:22px;font-weight:700;color:var(--muted)}
+.ranking .who{font-weight:600;overflow-wrap:anywhere}
+.ranking .who small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.track{position:relative;height:22px;background:var(--panel-2);border:1px solid var(--line);border-radius:5px;overflow:hidden;display:flex}
+.track span{display:block;height:100%}
+.track .t{background:var(--tickets)} .track .c{background:var(--calls)} .track .d{background:var(--direct)}
+.track .mark{position:absolute;top:-2px;bottom:-2px;width:0;border-left:2px dashed var(--ink);opacity:.35}
+.ranking .score{font-size:24px;font-weight:700;text-align:right}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
+.chip.above{background:var(--above-bg);color:var(--above)}
+.chip.meeting{background:var(--meeting-bg);color:var(--meeting)}
+.chip.below{background:var(--below-bg);color:var(--below)}
+@media (max-width:760px){
+  .ranking li{grid-template-columns:minmax(0,1fr) 56px;grid-template-areas:"who score" "bar bar" "chip chip";row-gap:8px}
+  .ranking .pos{grid-area:pos} .ranking .who{grid-area:who} .ranking .score{grid-area:score} .ranking .track{grid-area:bar} .ranking .perf{grid-area:chip}
+}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.detail{min-width:1180px;font-size:13.5px}
+.detail th,.detail td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.detail th{background:var(--navy);color:var(--navy-ink);font-weight:600;position:sticky;top:0}
+.detail th:first-child,.detail td:first-child{text-align:left;position:sticky;left:0}
+.detail th:first-child{background:var(--navy);z-index:1}
+.detail td:first-child{background:var(--panel);font-weight:600}
+.detail th.ts{background:var(--tickets);color:#fff} .detail th.cs{background:var(--calls);color:#fff} .detail th.ds{background:var(--direct);color:#fff}
+.detail td.ts{background:var(--tickets-soft)} .detail td.cs{background:var(--calls-soft)} .detail td.ds{background:var(--direct-soft)}
+.detail td.tot{font-weight:700}
+.detail tfoot td{font-weight:600;background:var(--panel-2)}
+.detail tfoot td:first-child{background:var(--panel-2)}
+.detail tfoot tr.sub td{font-weight:400;font-style:italic;color:var(--muted)}
+.foot{font-size:12.5px;color:var(--muted);margin:8px 2px 28px}
+
+.checks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){.checks{grid-template-columns:1fr}}
+.checks dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;font-size:14px}
+.checks dt{color:var(--muted)} .checks dd{margin:0;text-align:right;font-weight:600}
+.unknown{width:100%;font-size:14px}
+.unknown td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+.unknown select{padding:4px 8px;font-size:13px;max-width:200px}
+
+details.settings{margin-top:34px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 16px}
+details.settings summary{cursor:pointer;padding:14px 0;font-weight:600}
+.set-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;padding-bottom:16px}
+@media (max-width:760px){.set-grid{grid-template-columns:1fr}}
+.set-grid textarea{width:100%;min-height:180px;border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;background:var(--panel-2);font-size:13.5px;line-height:1.45}
+.set-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.set-row label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:3px}
+.set-row input{width:90px}
+.empty{color:var(--muted);text-align:center;padding:40px 10px;border:1px dashed var(--line-strong);border-radius:12px;margin-top:30px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>CSR productivity report</h1>
+    <p class="lede">Add the month’s Freshdesk, CRM, CiCi’s L1 and call log files. The report is built here in your browser; the files are not uploaded anywhere.</p>
+  </header>
+
+  <section class="intake" aria-label="Add reports">
+    <div class="drop" id="drop">
+      <strong>Drop the reports here</strong>
+      <span class="hint">Excel (.xlsx, .xls) or CSV. Each file can hold one report or several tabs; the type of each tab is recognised from its column headings.</span>
+      <div><button class="btn primary" id="pick" type="button">Choose files</button>
+        <input type="file" id="file" multiple accept=".xlsx,.xls,.csv" class="sr" aria-label="Choose report files"></div>
+      <ul class="files" id="files"></ul>
+    </div>
+    <div>
+      <div class="slots" id="slots"></div>
+      <div id="intakeNotice"></div>
+    </div>
+  </section>
+
+  <div id="empty" class="empty">Add at least one ticket report and the call log to see the team’s scores.</div>
+
+  <section class="results" id="results" hidden>
+    <div class="bar-top">
+      <div>
+        <h2 id="resultsTitle" style="margin:0">Team productivity</h2>
+        <span id="resultsSub" style="color:var(--muted);font-size:13px"></span>
+      </div>
+      <div class="controls">
+        <label>Rows to count<select id="month"></select></label>
+        <button class="btn primary" id="download" type="button" hidden>Download Excel report</button>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="card"><h3>Ticket productivity</h3><table class="mini" id="tTickets"></table></div>
+      <div class="card"><h3>Call productivity</h3><table class="mini" id="tCalls"></table></div>
+      <div class="card"><h3>Tickets by source</h3><table class="mini" id="tSources"></table></div>
+    </div>
+
+    <div class="rank-head">
+      <h2>Overall score, high to low</h2>
+      <div class="legend" aria-label="Score colours">
+        <span><i style="background:var(--tickets)"></i>Total ticket handling</span>
+        <span><i style="background:var(--calls)"></i>Calling</span>
+        <span><i style="background:var(--direct)"></i>Direct ticket handling</span>
+        <span id="bandLegend">Dashed lines: performance bands</span>
+      </div>
+    </div>
+    <ul class="ranking" id="ranking"></ul>
+
+    <h2>Team member detail</h2>
+    <div class="scroll"><table class="detail" id="detail"></table></div>
+    <p class="foot" id="detailFoot"></p>
+
+    <h2>Data check</h2>
+    <div class="checks">
+      <div class="card"><dl id="checkList"></dl></div>
+      <div class="card"><h3>Names not in the team list</h3><div id="unknownWrap"></div></div>
+    </div>
+  </section>
+
+  <details class="settings" id="settings">
+    <summary>Team, nicknames and scoring</summary>
+    <div class="set-grid">
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)">Team members (one per line)
+        <textarea id="setTeam" spellcheck="false"></textarea></label>
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)">Nicknames used in the reports (nickname = full name)
+        <textarea id="setAliases" spellcheck="false"></textarea></label>
+      <div>
+        <h3>Score weights (total 100)</h3>
+        <div class="set-row">
+          <label>Total ticket handling<input type="number" id="wT" min="0" max="100"></label>
+          <label>Calling<input type="number" id="wC" min="0" max="100"></label>
+          <label>Direct ticket handling<input type="number" id="wD" min="0" max="100"></label>
+        </div>
+      </div>
+      <div>
+        <h3>Performance bands</h3>
+        <div class="set-row">
+          <label>Above Expectations from<input type="number" id="bA" min="0" max="100"></label>
+          <label>Meeting Expectations from<input type="number" id="bM" min="0" max="100"></label>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:8px">Below the second number is Below Expectations.</p>
+      </div>
+      <div class="set-row" style="grid-column:1/-1">
+        <button class="btn primary" id="saveSettings" type="button">Save and recalculate</button>
+        <button class="btn" id="resetSettings" type="button">Restore defaults</button>
+        <span id="setMsg" style="font-size:13px;color:var(--muted)"></span>
+      </div>
+    </div>
+  </details>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script>
+/* ===== CSR productivity core (no DOM) ===== */
+(function (root) {
+  'use strict';
+
+  const DEFAULT_SETTINGS = {
+    team: [
+      'Chester Cayanan', 'Girlie Masacote', 'Dioscoro Felices', 'Hamor Tejones',
+      'Leander Arayata', 'Maria Lucia Olavides', 'Nathaniel Martinez',
+    ],
+    aliases: {
+      'chester': 'Chester Cayanan', 'chet': 'Chester Cayanan',
+      'girlie': 'Girlie Masacote',
+      'dio': 'Dioscoro Felices', 'dioscoro': 'Dioscoro Felices',
+      'ham': 'Hamor Tejones', 'hamor': 'Hamor Tejones',
+      'leander': 'Leander Arayata',
+      'lucy': 'Maria Lucia Olavides', 'maria lucia': 'Maria Lucia Olavides',
+      'nate': 'Nathaniel Martinez', 'nathaniel': 'Nathaniel Martinez',
+      'nathaniel jose martinez': 'Nathaniel Martinez',
+    },
+    weights: { tickets: 40, calls: 20, direct: 40 },
+    version: 2,
+    bands: { above: 90, meeting: 60 },
+  };
+
+  const SOURCES = {
+    freshdesk: { label: 'Freshdesk' },
+    crm: { label: 'CRM' },
+    cici: { label: "CiCi's L1" },
+    calls: { label: 'Call log' },
+  };
+
+  const norm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().toLowerCase();
+  const clean = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+
+  /* ---------- sheet detection ---------- */
+  function detectKind(headers) {
+    const h = new Set(headers.map(norm).filter(Boolean));
+    const has = k => h.has(k);
+    if (has('ticket number') && has('symptoms')) return 'crm';
+    if (has('ticket id') && (has('csr team member') || has('agent name'))) return 'freshdesk';
+    if (has('csr agent') && (has('ticket #') || has('escalated'))) return 'cici';
+    if (has('assigned to') && has('direction') && (has('disposition') || has('status'))) return 'calls';
+    return null;
+  }
+
+  // rows: array of arrays. Finds the header row in the first 15 rows.
+  function findTable(rows) {
+    for (let i = 0; i < Math.min(rows.length, 15); i++) {
+      const kind = detectKind(rows[i] || []);
+      if (kind) {
+        const headers = (rows[i] || []).map(norm);
+        const data = [];
+        for (let r = i + 1; r < rows.length; r++) {
+          const row = rows[r] || [];
+          if (!row.some(v => clean(v) !== '')) continue;
+          const o = {};
+          headers.forEach((k, c) => { if (k && !(k in o)) o[k] = row[c]; });
+          data.push(o);
+        }
+        return { kind, headers, rows: data };
+      }
+    }
+    return null;
+  }
+
+  /* ---------- dates ---------- */
+  // Excel serial → {y,m,d}; strings in several formats. dashOrder: 'dmy' | 'mdy'
+  // hint: 'dmy' | 'mdy' (for dash dates) or {slash:'dmy'|'mdy', dash:'dmy'|'mdy'} detected per column
+  function parseDate(v, hint) {
+    const slashOrder = (hint && typeof hint === 'object' && hint.slash) || 'mdy';
+    const dashOrder = (hint && typeof hint === 'object') ? (hint.dash || 'dmy') : (hint || 'dmy');
+    if (v == null || v === '') return null;
+    if (v instanceof Date && !isNaN(v)) return { y: v.getUTCFullYear(), m: v.getUTCMonth() + 1, d: v.getUTCDate() };
+    if (typeof v === 'number' && isFinite(v) && v > 20000 && v < 80000) {
+      const days = Math.floor(v);
+      const dt = new Date(Date.UTC(1899, 11, 30) + days * 86400000);
+      return { y: dt.getUTCFullYear(), m: dt.getUTCMonth() + 1, d: dt.getUTCDate() };
+    }
+    let s = String(v).trim().replace(/^[A-Za-z]{3,9},?\s+/, '').replace(/\s*\/\s*/g, '/');
+    let mt = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (mt) return ok(+mt[1], +mt[2], +mt[3]);
+    mt = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+    if (mt) {
+      const a = +mt[1], b = +mt[2], y = year(mt[3]);
+      if (a > 12) return ok(y, b, a);
+      if (b > 12) return ok(y, a, b);
+      return slashOrder === 'dmy' ? ok(y, b, a) : ok(y, a, b);
+    }
+    mt = s.match(/^(\d{1,2})[-.](\d{1,2})[-.](\d{2,4})/);
+    if (mt) {
+      const a = +mt[1], b = +mt[2], y = year(mt[3]);
+      if (a > 12) return ok(y, b, a);
+      if (b > 12) return ok(y, a, b);
+      return dashOrder === 'mdy' ? ok(y, a, b) : ok(y, b, a);
+    }
+    const t = Date.parse(s);
+    if (!isNaN(t)) { const dt = new Date(t); return ok(dt.getFullYear(), dt.getMonth() + 1, dt.getDate()); }
+    return null;
+    function year(x) { const n = +x; return n < 100 ? 2000 + n : n; }
+    function ok(y, m, d) { return (m >= 1 && m <= 12 && d >= 1 && d <= 31) ? { y, m, d } : null; }
+  }
+  // Look at a whole column: values like 30/9/2026 prove day-first, 9/30/2026 prove month-first
+  function inferOrder(values, defaults) {
+    const votes = { slash: { dmy: 0, mdy: 0 }, dash: { dmy: 0, mdy: 0 } };
+    values.forEach(v => {
+      if (typeof v !== 'string') return;
+      const mt = v.trim().replace(/^[A-Za-z]{3,9},?\s+/, '').replace(/\s*\/\s*/g, '/').match(/^(\d{1,2})([\/.-])(\d{1,2})\2(\d{2,4})/);
+      if (!mt) return;
+      const sep = mt[2] === '/' ? 'slash' : 'dash', a = +mt[1], b = +mt[3];
+      if (a > 12 && b <= 12) votes[sep].dmy++;
+      else if (b > 12 && a <= 12) votes[sep].mdy++;
+    });
+    const pick = (k, d) => votes[k].dmy > votes[k].mdy ? 'dmy' : votes[k].mdy > votes[k].dmy ? 'mdy' : d;
+    return { slash: pick('slash', defaults.slash), dash: pick('dash', defaults.dash) };
+  }
+  const monthKey = d => d ? d.y + '-' + String(d.m).padStart(2, '0') : '';
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthLabel = k => { if (!k) return 'Unknown'; const [y, m] = k.split('-'); return MONTHS[+m - 1] + ' ' + y; };
+
+  /* ---------- names ---------- */
+  function makeResolver(settings) {
+    const map = {};
+    settings.team.forEach(n => { map[norm(n)] = n; });
+    Object.keys(settings.aliases).forEach(k => {
+      const full = settings.aliases[k];
+      if (settings.team.indexOf(full) !== -1) map[norm(k)] = full;
+    });
+    // Full team names, longest first, for finding names written without a separator
+    const fullNames = settings.team.slice().sort((x, y) => y.length - x.length)
+      .map(n => ({ n, re: new RegExp('(^|[^a-z])' + norm(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+') + '(?![a-z])', 'i') }));
+    return function resolve(value) {
+      const members = [], unknown = [];
+      const add = full => { if (members.indexOf(full) === -1) members.push(full); };
+      String(value == null ? '' : value).split(/[\n\r\t,;\/&|+]+|\s+and\s+/i).forEach(part => {
+        const p = clean(part);
+        if (!p || /^(n\/?a|none|nil|null|-+)$/i.test(p)) return;          // NA = nobody
+        const full = map[norm(p)];
+        if (full) { add(full); return; }
+        // e.g. "Girlie Masacote Hamor Tejones": pick out every full team name inside
+        let rest = ' ' + norm(p) + ' ', found = false;
+        fullNames.forEach(({ n, re }) => { if (re.test(rest)) { add(n); found = true; rest = rest.replace(re, '$1 '); } });
+        if (found) {
+          const left = clean(rest);
+          if (left && !map[norm(left)] && unknown.indexOf(left) === -1) unknown.push(left);
+          else if (left && map[norm(left)]) add(map[norm(left)]);
+          return;
+        }
+        // e.g. "Lucy Nate Ham", "GIrlie Nate", "LucyHamNate", "GirlieChester": every piece must be a known name
+        for (const pieces of [p.split(/\s+/), p.replace(/([a-z])([A-Z])/g, '$1 $2').split(/\s+/)]) {
+          if (pieces.length > 1 && pieces.every(x => map[norm(x)])) { pieces.forEach(x => add(map[norm(x)])); return; }
+        }
+        if (unknown.indexOf(p) === -1) unknown.push(p);
+      });
+      return { members, unknown };
+    };
+  }
+
+  /* ---------- main computation ---------- */
+  // tables: [{kind, rows, fileName, sheetName}]
+  function compute(tables, settings, monthFilter) {
+    settings = settings || DEFAULT_SETTINGS;
+    const resolve = makeResolver(settings);
+    const team = settings.team.slice();
+    const notes = [];
+    const unknownNames = {};           // name -> {source -> count}
+    const monthsSeen = {};             // month -> count (tickets)
+    const callMonthsSeen = {};
+    let undatedTickets = 0, undatedCalls = 0;
+
+    const noteUnknown = (src, names) => names.forEach(n => {
+      unknownNames[n] = unknownNames[n] || {};
+      unknownNames[n][src] = (unknownNames[n][src] || 0) + 1;
+    });
+    const inMonth = (d, seen) => {
+      const k = monthKey(d);
+      if (seen) seen[k || ''] = (seen[k || ''] || 0) + 1;
+      if (!monthFilter || monthFilter === 'all') return true;
+      return !k || k === monthFilter;
+    };
+
+    // ---- tickets ----
+    const tickets = {};                // id -> {source, ticketNo, handled, members:Set, date}
+    const checks = { duplicateTicketRows: 0, closedAsDuplicate: [], noMember: { crm: 0, freshdesk: 0, cici: 0 },
+      naTickets: 0, fdField: 'CSR Team Member', fdMissingColumn: [], fdRowsNoColumn: 0, outsideMonth: 0 };
+    const rowsBySource = { crm: 0, freshdesk: 0, cici: 0, calls: 0 };
+
+    function addTicket(src, idRaw, rowNo, members, handled, date, fileTag) {
+      let id = clean(idRaw);
+      const isNA = !id || /^(n\/?a|na|-|none)$/i.test(id);
+      let key;
+      if (isNA) { key = src + '|NA|' + fileTag + '|' + rowNo; id = 'N/A'; }
+      else if (src === 'cici') { key = src + '|' + (id.toUpperCase().replace(/[^0-9/]/g, '') || id.toUpperCase()); }
+      else key = src + '|' + id.toUpperCase();
+      if (tickets[key]) {
+        checks.duplicateTicketRows++;
+        members.forEach(m => tickets[key].members.add(m));
+        return;
+      }
+      if (isNA) checks.naTickets++;
+      tickets[key] = { key, source: src, ticketNo: id, handled, members: new Set(members), date };
+    }
+
+    // Freshdesk tickets are credited ONLY by the "CSR Team Member" column (never Agent Name)
+    tables.forEach(t => {
+      if (t.kind === 'freshdesk' && t.headers.indexOf('csr team member') === -1)
+        checks.fdMissingColumn.push((t.fileName || 'file') + (t.sheetName ? ' / ' + t.sheetName : ''));
+    });
+
+    const orderFor = (t, cols, defaults) => {
+      const key = '_order_' + cols.join('|');
+      if (!t[key]) t[key] = inferOrder(t.rows.map(r => { const c = cols.find(k => clean(r[k])); return c ? r[c] : ''; }), defaults);
+      return t[key];
+    };
+    tables.forEach((t, ti) => {
+      const tag = ti + ':' + (t.sheetName || '');
+      t.rows.forEach((r, i) => {
+        if (t.kind === 'crm') {
+          if (!clean(r['ticket number'])) return;
+          rowsBySource.crm++;
+          const d = parseDate(r['created time'], orderFor(t, ['created time'], { slash: 'dmy', dash: 'dmy' }));
+          if (!d) undatedTickets++;
+          if (!inMonth(d, monthsSeen)) { checks.outsideMonth++; return; }
+          // Closed as a duplicate: marked in Internal Comment (Sept onwards) or Steps Followed (Aug)
+          if (/^duplicate ticket\b/.test(norm(r['internal comment'])) || /^duplicate ticket\b/.test(norm(r['steps followed']))) {
+            checks.closedAsDuplicate.push(clean(r['ticket number'])); return;
+          }
+          const res = resolve(r['symptoms']);
+          noteUnknown('CRM', res.unknown);
+          if (!res.members.length) { checks.noMember.crm++; return; }
+          const assigned = clean(r['internal assigned to']).replace(/\s+/g, '').toUpperCase();
+          addTicket('crm', r['ticket number'], i, res.members, (!assigned || assigned === 'CSR') ? 'Direct' : 'Escalated', d, tag);
+        } else if (t.kind === 'freshdesk') {
+          if (!clean(r['ticket id'])) return;
+          rowsBySource.freshdesk++;
+          const d = parseDate(r['created time'], orderFor(t, ['created time'], { slash: 'mdy', dash: 'mdy' }));
+          if (!d) undatedTickets++;
+          if (!inMonth(d, monthsSeen)) { checks.outsideMonth++; return; }
+          if (t.headers.indexOf('csr team member') === -1) { checks.fdRowsNoColumn++; return; }
+          const res = resolve(r['csr team member']);
+          noteUnknown('Freshdesk', res.unknown);
+          if (!res.members.length) { checks.noMember.freshdesk++; return; }
+          addTicket('freshdesk', r['ticket id'], i, res.members, 'Direct', d, tag);
+        } else if (t.kind === 'cici') {
+          const agent = r['csr agent'];
+          if (!clean(agent) && !clean(r['ticket #'])) return;
+          rowsBySource.cici++;
+          const dateCol = Object.keys(r).find(k => k === 'date') || Object.keys(r)[0];
+          const d = parseDate(r[dateCol], orderFor(t, [dateCol], { slash: 'mdy', dash: 'mdy' }));
+          if (!d) undatedTickets++;
+          if (!inMonth(d, monthsSeen)) { checks.outsideMonth++; return; }
+          const res = resolve(agent);
+          noteUnknown("CiCi's L1", res.unknown);
+          if (!res.members.length) { checks.noMember.cici++; return; }
+          const esc = norm(r['escalated']);
+          const handled = (!esc || /^(no|n|n\/a|na|-|none|false)$/.test(esc)) ? 'Direct' : 'Escalated';
+          addTicket('cici', r['ticket #'], i, res.members, handled, d, tag);
+        }
+      });
+    });
+
+    // ---- calls ----
+    const callKeys = new Set();
+    const calls = [];
+    let duplicateCalls = 0, callsNotTeam = 0;
+    tables.filter(t => t.kind === 'calls').forEach(t => {
+      t.rows.forEach(r => {
+        rowsBySource.calls++;
+        const key = t.headers.map(h => clean(r[h])).join('|');
+        if (callKeys.has(key)) { duplicateCalls++; return; }
+        callKeys.add(key);
+        const res = resolve(r['assigned to']);
+        if (!res.members.length) { callsNotTeam++; return; }
+        const o = orderFor(t, ['modified time', 'created time', 'call date'], { slash: 'mdy', dash: 'mdy' });
+        const d = parseDate(r['modified time'], o) || parseDate(r['created time'], o) || parseDate(r['call date'], o);
+        if (!d) undatedCalls++;
+        if (!inMonth(d, callMonthsSeen)) return;
+        const inbound = /inbound/i.test(clean(r['direction']));
+        const disp = norm(r['disposition']);
+        const status = norm(r['status']);
+        const completed = disp ? /^(completed|answered|conversation)$/.test(disp) : status === 'completed';
+        calls.push({ members: res.members, member: res.members.join(', '), inbound, completed, date: d,
+          category: completed ? 'Completed' : (inbound ? 'Missed' : 'Attempted'),
+          disposition: clean(r['disposition']), status: clean(r['status']),
+          duration: clean(r['duration(sec)']), to: clean(r['to']), when: clean(r['modified time'] || r['created time']) });
+      });
+    });
+
+    // ---- per member ----
+    const per = {};
+    team.forEach(n => per[n] = { name: n, crm: 0, freshdesk: 0, cici: 0, na: 0, direct: 0, escalated: 0, total: 0,
+      inbound: 0, outbound: 0, missed: 0, attempted: 0, completed: 0 });
+    const ticketList = Object.values(tickets);
+    ticketList.forEach(tk => tk.members.forEach(m => {
+      const p = per[m]; if (!p) return;
+      p[tk.source]++; p.total++;
+      if (tk.handled === 'Direct') p.direct++; else p.escalated++;
+      if (tk.ticketNo === 'N/A') p.na++;
+    }));
+    // Shared calls give full credit to every team member on the call
+    calls.forEach(c => c.members.forEach(name => {
+      const p = per[name]; if (!p) return;
+      if (c.inbound) p.inbound++; else p.outbound++;
+      if (c.completed) p.completed++; else if (c.inbound) p.missed++; else p.attempted++;
+    }));
+
+    const members = Object.values(per);
+    const maxT = Math.max(0, ...members.map(m => m.total));
+    const maxC = Math.max(0, ...members.map(m => m.completed));
+    const w = settings.weights;
+    members.forEach(m => {
+      m.ticketScore = maxT ? m.total / maxT * w.tickets : 0;
+      m.callScore = maxC ? m.completed / maxC * w.calls : 0;
+      m.directScore = m.total ? m.direct / m.total * w.direct : 0;
+      m.score = Math.round((m.ticketScore + m.callScore + m.directScore) * 10) / 10;
+      m.performance = m.score >= settings.bands.above ? 'Above Expectations'
+        : m.score >= settings.bands.meeting ? 'Meeting Expectations' : 'Below Expectations';
+    });
+    members.sort((a, b) => b.score - a.score || b.total - a.total || a.name.localeCompare(b.name));
+    members.forEach((m, i) => { m.rank = i > 0 && members[i - 1].score === m.score ? members[i - 1].rank : i + 1; });
+
+    // ---- team totals (each ticket once) ----
+    const teamTotals = { direct: 0, escalated: 0, total: ticketList.length,
+      bySource: { crm: { direct: 0, escalated: 0 }, freshdesk: { direct: 0, escalated: 0 }, cici: { direct: 0, escalated: 0 } },
+      inbound: 0, outbound: 0, missed: 0, attempted: 0, completed: 0, calls: calls.length,
+      memberSum: members.reduce((s, m) => s + m.total, 0) };
+    ticketList.forEach(tk => {
+      const k = tk.handled === 'Direct' ? 'direct' : 'escalated';
+      teamTotals[k]++; teamTotals.bySource[tk.source][k]++;
+    });
+    calls.forEach(c => {
+      if (c.inbound) teamTotals.inbound++; else teamTotals.outbound++;
+      if (c.completed) teamTotals.completed++; else if (c.inbound) teamTotals.missed++; else teamTotals.attempted++;
+    });
+
+    const months = Object.keys(monthsSeen).filter(Boolean).sort();
+    return {
+      members, teamTotals, tickets: ticketList, calls,
+      checks: Object.assign(checks, { duplicateCalls, callsNotTeam, undatedTickets, undatedCalls, rowsBySource,
+        sharedTickets: ticketList.filter(t => t.members.size > 1).length,
+        sharedCalls: calls.filter(c => c.members.length > 1).length,
+        sharedBySource: ['crm', 'freshdesk', 'cici'].reduce((o, k) => (o[k] = ticketList.filter(t => t.source === k && t.members.size > 1).length, o), {}) }),
+      unknownNames, months, callMonths: Object.keys(callMonthsSeen).filter(Boolean).sort(), monthsSeen,
+    };
+  }
+
+  // Pick the month with the most tickets as the default
+  function defaultMonth(monthsSeen) {
+    let best = '', n = -1;
+    Object.keys(monthsSeen).forEach(k => { if (k && monthsSeen[k] > n) { best = k; n = monthsSeen[k]; } });
+    return best || 'all';
+  }
+
+  root.CSRCore = { DEFAULT_SETTINGS, SOURCES, findTable, detectKind, parseDate, inferOrder, compute, defaultMonth, monthLabel, makeResolver };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* ===== Formatted Excel export (ExcelJS) ===== */
+(function (root) {
+  'use strict';
+
+  const NAVY = 'FF1F3864', WHITE = 'FFFFFFFF', LIGHT = 'FFD9E1F2', GREY = 'FFF2F2F2';
+  const ORANGE = 'FFC55A11', ORANGE_L = 'FFFCE4D6';
+  const GREEN = 'FF548235', GREEN_L = 'FFE2EFDA';
+  const BLUE = 'FF2F75B5', BLUE_L = 'FFDDEBF7';
+  const PERF = {
+    'Above Expectations': { bg: 'FFC6EFCE', fg: 'FF006100' },
+    'Meeting Expectations': { bg: 'FFFFEB9C', fg: 'FF9C5700' },
+    'Below Expectations': { bg: 'FFFFC7CE', fg: 'FF9C0006' },
+  };
+  const FONT = 'Arial';
+  const thin = { style: 'thin', color: { argb: 'FFBFBFBF' } };
+  const BOX = { top: thin, left: thin, bottom: thin, right: thin };
+  const fill = argb => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
+  const r1 = n => Math.round(n * 10) / 10;
+  const SM = "'Scoring Method'!";
+
+  function style(cell, o) {
+    o = o || {};
+    cell.font = { name: FONT, size: o.size || 10, bold: !!o.bold, italic: !!o.italic, color: { argb: o.color || 'FF000000' } };
+    if (o.fill) cell.fill = fill(o.fill);
+    if (o.border !== false) cell.border = BOX;
+    cell.alignment = { vertical: 'middle', horizontal: o.align || 'left', wrapText: !!o.wrap };
+    if (o.numFmt) cell.numFmt = o.numFmt;
+  }
+  function header(ws, row, values, startCol, fillArgb) {
+    values.forEach((v, i) => {
+      const c = ws.getCell(row, (startCol || 1) + i);
+      c.value = v;
+      style(c, { bold: true, color: WHITE, fill: fillArgb || NAVY, align: 'center', wrap: true });
+    });
+  }
+  function band(ws, row, text, lastCol) {
+    ws.mergeCells(row, 1, row, lastCol);
+    const c = ws.getCell(row, 1);
+    c.value = text;
+    style(c, { bold: true, size: 11, color: WHITE, fill: NAVY, border: false });
+    ws.getRow(row).height = 20;
+  }
+  function put(ws, row, c1, c2, value, o) {
+    if (c2 > c1) ws.mergeCells(row, c1, row, c2);
+    const c = ws.getCell(row, c1);
+    c.value = value;
+    style(c, o);
+    for (let k = c1 + 1; k <= c2; k++) { ws.getCell(row, k).border = BOX; if (o && o.fill) ws.getCell(row, k).fill = fill(o.fill); }
+    return c;
+  }
+
+  /**
+   * r: result of CSRCore.compute; settings; meta: {monthText, files:[{name, desc}], generated}
+   * returns ExcelJS.Workbook
+   */
+  function build(ExcelJS, r, settings, meta) {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'CSR productivity report';
+    wb.created = new Date();
+    wb.calcProperties = { fullCalcOnLoad: true };
+    const W = settings.weights, B = settings.bands, T = r.teamTotals;
+    const members = r.members;
+    const n = members.length;
+    const FIRST = 5, LAST = FIRST + n - 1;
+
+    /* ---------------- Team Member Report ---------------- */
+    const ws = wb.addWorksheet('Team Member Report', { views: [{ state: 'frozen', xSplit: 1, ySplit: 4 }] });
+    const COLS = [
+      ['Team Member', 30], ['CRM Tickets', 10], ['Freshdesk Tickets', 11], ["CiCi's L1 Tickets", 11],
+      ['Direct', 9], ['Escalated', 10], ['Total Tickets', 10],
+      ['Inbound Calls', 10], ['Outbound Calls', 10], ['Missed Calls', 9], ['Attempted Calls', 10], ['Completed Calls', 11],
+      ['Total Ticket Handling Score /' + W.tickets, 15], ['Call Score /' + W.calls, 12], ['Direct Ticket Handling Score /' + W.direct, 15],
+      ['Overall Score /100', 11], ['Performance', 22],
+    ];
+    COLS.forEach((c, i) => { ws.getColumn(i + 1).width = c[1]; });
+    const LASTCOL = COLS.length; // 17 = Q
+
+    ws.mergeCells(1, 1, 1, LASTCOL);
+    ws.getCell(1, 1).value = 'CSR Team Member Productivity — ' + meta.monthText;
+    style(ws.getCell(1, 1), { bold: true, size: 14, color: NAVY, border: false });
+    ws.getRow(1).height = 24;
+    ws.mergeCells(2, 1, 2, LASTCOL);
+    ws.getCell(2, 1).value = 'Sorted by Overall Score, highest first. Generated ' + meta.generated + '. See the notes below the table for how the scores are calculated.';
+    style(ws.getCell(2, 1), { italic: true, size: 9, color: 'FF595959', border: false });
+
+    [[2, 7, 'Ticket Productivity'], [8, 12, 'Call Productivity'], [13, 17, 'Score']].forEach(([a, b, t]) => {
+      ws.mergeCells(3, a, 3, b);
+      const c = ws.getCell(3, a); c.value = t;
+      style(c, { bold: true, color: NAVY, fill: LIGHT, align: 'center' });
+    });
+    header(ws, 4, COLS.map(c => c[0]));
+    ws.getRow(4).height = 45;
+    [[13, ORANGE], [14, GREEN], [15, BLUE]].forEach(([col, f]) => style(ws.getCell(4, col), { bold: true, color: WHITE, fill: f, align: 'center', wrap: true }));
+    // highlight the input columns that feed each score in the same colour
+    [[7, ORANGE], [12, GREEN], [5, BLUE]].forEach(([col, f]) => style(ws.getCell(4, col), { bold: true, color: WHITE, fill: f, align: 'center', wrap: true }));
+
+    members.forEach((m, i) => {
+      const row = FIRST + i;
+      const vals = [m.name, m.crm, m.freshdesk, m.cici, m.direct, m.escalated];
+      vals.forEach((v, k) => style(Object.assign(ws.getCell(row, k + 1), { value: v }), { align: k ? 'center' : 'left', bold: k === 0 }));
+      const f = (col, formula, result, o) => { const c = ws.getCell(row, col); c.value = { formula, result }; style(c, Object.assign({ align: 'center' }, o || {})); return c; };
+      f(7, `E${row}+F${row}`, m.total, { fill: ORANGE_L, bold: true });
+      [m.inbound, m.outbound, m.missed, m.attempted].forEach((v, k) => style(Object.assign(ws.getCell(row, 8 + k), { value: v }), { align: 'center' }));
+      style(Object.assign(ws.getCell(row, 12), { value: m.completed }), { align: 'center', fill: GREEN_L, bold: true });
+      f(13, `IFERROR(G${row}/MAX($G$${FIRST}:$G$${LAST}),0)*${SM}$B$4`, r1(m.ticketScore), { fill: ORANGE_L, numFmt: '0.0' });
+      f(14, `IFERROR(L${row}/MAX($L$${FIRST}:$L$${LAST}),0)*${SM}$B$5`, r1(m.callScore), { fill: GREEN_L, numFmt: '0.0' });
+      f(15, `IFERROR(E${row}/G${row},0)*${SM}$B$6`, r1(m.directScore), { fill: BLUE_L, numFmt: '0.0' });
+      f(16, `ROUND(SUM(M${row}:O${row}),1)`, m.score, { bold: true, numFmt: '0.0' });
+      const perf = f(17, `IF(P${row}>=${SM}$B$10,"Above Expectations",IF(P${row}>=${SM}$B$11,"Meeting Expectations","Below Expectations"))`, m.performance,
+        { bold: true, fill: PERF[m.performance].bg, color: PERF[m.performance].fg });
+      perf.alignment = { horizontal: 'center', vertical: 'middle' };
+      style(ws.getCell(row, 5), { align: 'center', fill: BLUE_L, bold: true });
+    });
+    // performance colours follow the formula if scores change
+    ws.addConditionalFormatting({
+      ref: `Q${FIRST}:Q${LAST}`,
+      rules: Object.keys(PERF).map((k, i) => ({ type: 'expression', priority: i + 1, formulae: [`$Q${FIRST}="${k}"`],
+        style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: PERF[k].bg } }, font: { color: { argb: PERF[k].fg }, bold: true } } })),
+    });
+
+    // totals
+    const TOT = LAST + 1, SUMR = LAST + 2;
+    const bySrc = k => T.bySource[k].direct + T.bySource[k].escalated;
+    const teamVals = ['Team Total (each ticket once)', bySrc('crm'), bySrc('freshdesk'), bySrc('cici'),
+      T.direct, T.escalated, T.total, T.inbound, T.outbound, T.missed, T.attempted, T.completed];
+    teamVals.forEach((v, k) => style(Object.assign(ws.getCell(TOT, k + 1), { value: v }), { bold: true, fill: LIGHT, align: k ? 'center' : 'left' }));
+    for (let k = 13; k <= LASTCOL; k++) style(ws.getCell(TOT, k), { fill: LIGHT });
+    ws.getCell(TOT, 16).value = { formula: `ROUND(AVERAGE(P${FIRST}:P${LAST}),1)`, result: r1(members.reduce((s, m) => s + m.score, 0) / Math.max(n, 1)) };
+    style(ws.getCell(TOT, 16), { bold: true, fill: LIGHT, align: 'center', numFmt: '0.0' });
+    ws.getCell(TOT, 17).value = 'Team average score';
+    style(ws.getCell(TOT, 17), { italic: true, fill: LIGHT, size: 9, align: 'center' });
+    style(Object.assign(ws.getCell(SUMR, 1), { value: 'Sum of member rows' }), { italic: true, fill: GREY });
+    const sumKeys = ['crm', 'freshdesk', 'cici', 'direct', 'escalated', 'total', 'inbound', 'outbound', 'missed', 'attempted', 'completed'];
+    sumKeys.forEach((k, i) => {
+      const col = i + 2, L = ws.getColumn(col).letter;
+      ws.getCell(SUMR, col).value = { formula: `SUM(${L}${FIRST}:${L}${LAST})`, result: members.reduce((s, m) => s + m[k], 0) };
+      style(ws.getCell(SUMR, col), { italic: true, fill: GREY, align: 'center' });
+    });
+    for (let k = 13; k <= LASTCOL; k++) style(ws.getCell(SUMR, k), { fill: GREY });
+    ws.mergeCells(SUMR + 1, 1, SUMR + 1, LASTCOL);
+    ws.getCell(SUMR + 1, 1).value = 'Team Total counts every ticket once. Each member gets full credit for tickets they worked on, so the Sum of member rows can be higher when several members worked the same ticket.';
+    style(ws.getCell(SUMR + 1, 1), { italic: true, size: 9, color: 'FF595959', border: false, wrap: true });
+    ws.getRow(SUMR + 1).height = 26;
+
+    /* ---- NOTES ---- */
+    let row = SUMR + 3;
+    band(ws, row, 'NOTES — score colour coding', LASTCOL);
+    [['Orange', ORANGE, ORANGE_L, 'Total Ticket Handling Score (column M) — based on Total Tickets (column G)'],
+     ['Green', GREEN, GREEN_L, 'Call Score (column N) — based on Completed Calls (column L)'],
+     ['Blue', BLUE, BLUE_L, 'Direct Ticket Handling Score (column O) — based on Direct tickets (column E)']].forEach(([name, h, l, text]) => {
+      row++;
+      put(ws, row, 1, 1, name, { bold: true, color: WHITE, fill: h, align: 'center' });
+      put(ws, row, 2, 10, text, { bold: true, fill: l });
+    });
+
+    row += 2;
+    band(ws, row, 'PERFORMANCE CLASSIFICATION — based on Overall Score (column P)', LASTCOL);
+    row++;
+    put(ws, row, 1, 1, 'Score range', { bold: true, fill: LIGHT, align: 'center' });
+    put(ws, row, 2, 4, 'Performance', { bold: true, fill: LIGHT, align: 'center' });
+    [[`${B.above}+`, 'Above Expectations'], [`${B.meeting}–${B.above - 1}`, 'Meeting Expectations'], [`0–${B.meeting - 1}`, 'Below Expectations']].forEach(([rg, p]) => {
+      row++;
+      put(ws, row, 1, 1, rg, { bold: true, fill: PERF[p].bg, color: PERF[p].fg, align: 'center' });
+      put(ws, row, 2, 4, p, { bold: true, fill: PERF[p].bg, color: PERF[p].fg, align: 'center' });
+    });
+    put(ws, row - 2, 5, 12, "These bands can be changed on the 'Scoring Method' sheet.", { italic: true, size: 9, border: false, wrap: true });
+
+    row += 2;
+    const ex = members[0];
+    band(ws, row, 'HOW THE SCORES ARE CALCULATED — with an example' + (ex ? ' (' + ex.name + ')' : ''), LASTCOL);
+    row++;
+    put(ws, row, 1, 1, 'Score', { bold: true, fill: LIGHT, align: 'center' });
+    put(ws, row, 2, 8, 'How it is calculated', { bold: true, fill: LIGHT, align: 'center' });
+    put(ws, row, 9, 15, 'Example', { bold: true, fill: LIGHT, align: 'center' });
+    put(ws, row, 16, 17, 'Result', { bold: true, fill: LIGHT, align: 'center' });
+    if (ex) {
+      const maxT = Math.max(...members.map(m => m.total)), maxC = Math.max(...members.map(m => m.completed));
+      const topT = members.find(m => m.total === maxT).name, topC = members.find(m => m.completed === maxC).name;
+      const rows = [
+        ['Total Ticket Handling Score (out of ' + W.tickets + ')', ORANGE_L,
+          'Compares how many tickets the person worked on with the team member who worked on the most. The busiest person gets the full ' + W.tickets + ' points; everyone else gets a share.',
+          `${ex.name} worked on ${ex.total} tickets. The most in the team was ${maxT} (${topT}). ${ex.total} ÷ ${maxT} × ${W.tickets} = ${r1(ex.ticketScore).toFixed(1)} points.`,
+          `M${FIRST}`, r1(ex.ticketScore), '0.0'],
+        ['Call Score (out of ' + W.calls + ')', GREEN_L,
+          'Compares completed calls with the team member who completed the most calls. The top caller gets the full ' + W.calls + ' points.',
+          `${ex.name} completed ${ex.completed} calls. The most in the team was ${maxC} (${topC}). ${ex.completed} ÷ ${maxC} × ${W.calls} = ${r1(ex.callScore).toFixed(1)} points.`,
+          `N${FIRST}`, r1(ex.callScore), '0.0'],
+        ['Direct Ticket Handling Score (out of ' + W.direct + ')', BLUE_L,
+          'The share of the person’s own tickets they solved themselves, without passing them to another support level. Solving all of them gives the full ' + W.direct + ' points.',
+          `${ex.name} solved ${ex.direct} of ${ex.total} tickets directly. ${ex.direct} ÷ ${ex.total} × ${W.direct} = ${r1(ex.directScore).toFixed(1)} points.`,
+          `O${FIRST}`, r1(ex.directScore), '0.0'],
+        ['Overall Score (out of 100)', null,
+          'The three scores above added together.',
+          `${r1(ex.ticketScore).toFixed(1)} + ${r1(ex.callScore).toFixed(1)} + ${r1(ex.directScore).toFixed(1)} = ${ex.score.toFixed(1)} points.`,
+          `P${FIRST}`, ex.score, '0.0'],
+        ['Performance', null,
+          `${B.above} and above = Above Expectations. ${B.meeting} to ${B.above - 1} = Meeting Expectations. Below ${B.meeting} = Below Expectations.`,
+          `${ex.score.toFixed(1)} points → ${ex.performance}.`,
+          `Q${FIRST}`, ex.performance, null],
+      ];
+      rows.forEach(([name, lf, how, example, ref, live, fmt]) => {
+        row++;
+        const o = lf ? { fill: lf } : {};
+        put(ws, row, 1, 1, name, Object.assign({ bold: true, wrap: true }, o));
+        put(ws, row, 2, 8, how, Object.assign({ wrap: true }, o));
+        put(ws, row, 9, 15, example, Object.assign({ wrap: true }, o));
+        const res = put(ws, row, 16, 17, null, Object.assign({ bold: true, align: 'center', wrap: true, numFmt: fmt || undefined }, o));
+        res.value = { formula: ref, result: live };
+        ws.getRow(row).height = 44;
+      });
+    }
+    row += 2;
+    ws.mergeCells(row, 1, row, LASTCOL);
+    ws.getCell(row, 1).value = "The points (" + W.tickets + " / " + W.calls + " / " + W.direct + ") and the performance bands can be changed on the 'Scoring Method' sheet; all scores update automatically.";
+    style(ws.getCell(row, 1), { italic: true, size: 9, color: 'FF595959', border: false, wrap: true });
+    ws.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+
+    /* ---------------- Summary ---------------- */
+    const su = wb.addWorksheet('Summary');
+    [26, 12, 12, 12].forEach((w, i) => { su.getColumn(i + 1).width = w; });
+    su.mergeCells('A1:D1');
+    su.getCell('A1').value = 'Team Summary — ' + meta.monthText;
+    style(su.getCell('A1'), { bold: true, size: 14, color: NAVY, border: false });
+    const TMR = "'Team Member Report'!";
+    const link = (col, result) => ({ formula: `${TMR}${col}${TOT}`, result });
+    let sr = 3;
+    header(su, sr, ['Ticket Productivity', 'Count']);
+    [['Direct', link('E', T.direct)], ['Escalated', link('F', T.escalated)]].forEach(([k, v]) => {
+      sr++; style(Object.assign(su.getCell(sr, 1), { value: k }), {}); style(Object.assign(su.getCell(sr, 2), { value: v }), { align: 'right' });
+    });
+    sr++; style(Object.assign(su.getCell(sr, 1), { value: 'Total Tickets' }), { bold: true, fill: LIGHT });
+    style(Object.assign(su.getCell(sr, 2), { value: link('G', T.total) }), { bold: true, fill: LIGHT, align: 'right' });
+    sr += 2;
+    header(su, sr, ['Call Productivity', 'Count']);
+    [['Inbound Calls', 'H', T.inbound], ['Outbound Calls', 'I', T.outbound], ['Missed Calls', 'J', T.missed], ['Attempted Calls', 'K', T.attempted], ['Completed Calls', 'L', T.completed]]
+      .forEach(([k, c, v]) => { sr++; style(Object.assign(su.getCell(sr, 1), { value: k }), {}); style(Object.assign(su.getCell(sr, 2), { value: link(c, v) }), { align: 'right', fill: c === 'L' ? GREEN_L : undefined }); });
+    sr += 2;
+    header(su, sr, ['Tickets by Source', 'Direct', 'Escalated', 'Total']);
+    const srcRows = [['CRM', 'crm'], ['Freshdesk', 'freshdesk'], ["CiCi's L1", 'cici']];
+    const srcStart = sr + 1;
+    srcRows.forEach(([lab, k]) => {
+      sr++;
+      style(Object.assign(su.getCell(sr, 1), { value: lab }), {});
+      style(Object.assign(su.getCell(sr, 2), { value: T.bySource[k].direct }), { align: 'right' });
+      style(Object.assign(su.getCell(sr, 3), { value: T.bySource[k].escalated }), { align: 'right' });
+      style(Object.assign(su.getCell(sr, 4), { value: { formula: `B${sr}+C${sr}`, result: T.bySource[k].direct + T.bySource[k].escalated } }), { align: 'right' });
+    });
+    sr++;
+    style(Object.assign(su.getCell(sr, 1), { value: 'Total' }), { bold: true, fill: LIGHT });
+    ['B', 'C', 'D'].forEach((c, i) => style(Object.assign(su.getCell(sr, i + 2),
+      { value: { formula: `SUM(${c}${srcStart}:${c}${sr - 1})`, result: [T.direct, T.escalated, T.total][i] } }), { bold: true, fill: LIGHT, align: 'right' }));
+
+    /* ---------------- Ticket Log ---------------- */
+    const tl = wb.addWorksheet('Ticket Log', { views: [{ state: 'frozen', ySplit: 1 }] });
+    const srcName = { crm: 'CRM', freshdesk: 'Freshdesk', cici: "CiCi's L1" };
+    const dstr = d => d ? d.y + '-' + String(d.m).padStart(2, '0') + '-' + String(d.d).padStart(2, '0') : '';
+    header(tl, 1, ['Source', 'Ticket #', 'Team Member', 'Handled', 'Created Date', 'Members on Ticket', 'All Members on Ticket (each gets full credit)']);
+    [12, 18, 24, 12, 13, 12, 60].forEach((w, i) => { tl.getColumn(i + 1).width = w; });
+    let tr = 1;
+    r.tickets.forEach(t => Array.from(t.members).forEach(m => {
+      tr++;
+      tl.getRow(tr).values = [srcName[t.source], t.ticketNo, m, t.handled, dstr(t.date), t.members.size, Array.from(t.members).join(', ')];
+      if (t.members.size > 1) tl.getCell(tr, 6).fill = fill(LIGHT);
+      if (t.handled === 'Escalated') tl.getCell(tr, 4).font = { name: FONT, size: 10, color: { argb: 'FF9C0006' } };
+    }));
+    tl.autoFilter = { from: 'A1', to: { row: Math.max(tr, 1), column: 7 } };
+
+    /* ---------------- Call Log (team) ---------------- */
+    const cl = wb.addWorksheet('Call Log (team)', { views: [{ state: 'frozen', ySplit: 1 }] });
+    header(cl, 1, ['Team Member', 'Call Time', 'Direction', 'Result', 'Disposition', 'Status', 'Duration (sec)', 'To', 'All Members on Call (each gets full credit)']);
+    [24, 20, 11, 11, 14, 12, 13, 16, 44].forEach((w, i) => { cl.getColumn(i + 1).width = w; });
+    let cr = 1;
+    r.calls.forEach(c => c.members.forEach(m => {
+      cr++;
+      cl.getRow(cr).values = [m, c.when, c.inbound ? 'Inbound' : 'Outbound', c.category, c.disposition, c.status, Number(c.duration) || c.duration, c.to, c.members.join(', ')];
+      cl.getCell(cr, 4).fill = fill(c.category === 'Completed' ? GREEN_L : c.category === 'Missed' ? 'FFFFC7CE' : 'FFFFEB9C');
+      if (c.members.length > 1) cl.getCell(cr, 9).fill = fill(LIGHT);
+    }));
+    cl.autoFilter = { from: 'A1', to: { row: Math.max(cr, 1), column: 9 } };
+
+    /* ---------------- Scoring Method ---------------- */
+    const sm = wb.addWorksheet('Scoring Method');
+    sm.getColumn(1).width = 30; sm.getColumn(2).width = 12; sm.getColumn(3).width = 95;
+    sm.mergeCells('A1:C1'); sm.getCell('A1').value = 'Scoring Method';
+    style(sm.getCell('A1'), { bold: true, size: 14, color: NAVY, border: false });
+    header(sm, 3, ['Component', 'Weight', 'How it is measured']);
+    [['Total Ticket Handling Score', W.tickets, "Member's Total Tickets ÷ highest Total Tickets in the team × weight.", ORANGE_L],
+     ['Call Score', W.calls, 'Completed Calls ÷ highest Completed Calls in the team × weight.', GREEN_L],
+     ['Direct Ticket Handling Score', W.direct, "Direct tickets ÷ member's Total Tickets × weight.", BLUE_L]].forEach(([a, b, c, f], i) => {
+      style(Object.assign(sm.getCell(4 + i, 1), { value: a }), { bold: true, fill: f });
+      style(Object.assign(sm.getCell(4 + i, 2), { value: b }), { align: 'center', fill: 'FFFFFF00', color: 'FF0000FF' });
+      style(Object.assign(sm.getCell(4 + i, 3), { value: c }), { fill: f });
+    });
+    style(Object.assign(sm.getCell(7, 1), { value: 'Total' }), { bold: true });
+    style(Object.assign(sm.getCell(7, 2), { value: { formula: 'SUM(B4:B6)', result: W.tickets + W.calls + W.direct } }), { bold: true, align: 'center' });
+    header(sm, 9, ['Performance', 'From score', '']);
+    [['Above Expectations', B.above], ['Meeting Expectations', B.meeting], ['Below Expectations', 0]].forEach(([p, v], i) => {
+      style(Object.assign(sm.getCell(10 + i, 1), { value: p }), { bold: true, fill: PERF[p].bg, color: PERF[p].fg });
+      style(Object.assign(sm.getCell(10 + i, 2), { value: v }), { align: 'center', fill: 'FFFFFF00', color: 'FF0000FF' });
+      style(Object.assign(sm.getCell(10 + i, 3), { value: i === 2 ? 'Any score below Meeting Expectations.' : 'Score at or above this number.' }), {});
+    });
+    sm.getCell('A14').value = 'Yellow cells are inputs: change them and every score and performance label recalculates.';
+    style(sm.getCell('A14'), { italic: true, size: 9, border: false });
+    header(sm, 16, ['Data rules', '', '']);
+    sm.mergeCells('A16:C16');
+    ['CRM: team member from Symptoms. Internal Assigned To = CSR is Direct; anything else is Escalated. Rows closed as "Duplicate ticket" are left out.',
+     'Freshdesk: tickets are credited only to the person(s) in the CSR Team Member column (Agent Name is not used). Every ticket is Direct.',
+     "CiCi's L1: team member from CSR Agent. Escalated = No or blank is Direct; anything else is Escalated. Rows without a ticket number (N/A) are included.",
+     'Calls: Completed = Disposition Completed / Answered / Conversation. Missed = inbound not completed. Attempted = outbound not completed. Each call is counted once.',
+     'Shared tickets and calls (CRM, Freshdesk, CiCi\'s L1, call log) give full credit to every team member named on them; team totals count each ticket and call once.'].forEach((t, i) => {
+      sm.mergeCells(17 + i, 1, 17 + i, 3);
+      sm.getCell(17 + i, 1).value = t;
+      style(sm.getCell(17 + i, 1), { wrap: true });
+      sm.getRow(17 + i).height = 28;
+    });
+
+    return wb;
+  }
+
+  root.CSRExport = { build };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function(){
+'use strict';
+const C = window.CSRCore;
+const $ = id => document.getElementById(id);
+const fmt1 = n => (Math.round(n * 10) / 10).toFixed(1);
+const h = (tag, attrs, ...kids) => {
+  const el = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'class') el.className = attrs[k];
+    else if (k === 'style') el.setAttribute('style', attrs[k]);
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== false && attrs[k] != null) el.setAttribute(k, attrs[k]);
+  }
+  kids.flat().forEach(k => { if (k != null && k !== false) el.append(k instanceof Node ? k : document.createTextNode(String(k))); });
+  return el;
+};
+
+/* ---------- settings ---------- */
+const STORE_KEY = 'csr-productivity-settings-v1';
+let settings = loadSettings();
+function loadSettings(){
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (s && s.team && s.aliases && s.weights && s.bands) {
+      // Scoring changed to 40 / 20 / 40: update saved settings once, keep team and nicknames
+      if (!s.version || s.version < 2) { s.weights = Object.assign({}, C.DEFAULT_SETTINGS.weights); s.version = 2; try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch(e){} }
+      return s;
+    }
+  } catch(e){}
+  return JSON.parse(JSON.stringify(C.DEFAULT_SETTINGS));
+}
+function storeSettings(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(settings)); } catch(e){} }
+function fillSettingsForm(){
+  $('setTeam').value = settings.team.join('\n');
+  $('setAliases').value = Object.keys(settings.aliases).sort().map(k => k + ' = ' + settings.aliases[k]).join('\n');
+  $('wT').value = settings.weights.tickets; $('wC').value = settings.weights.calls; $('wD').value = settings.weights.direct;
+  $('bA').value = settings.bands.above; $('bM').value = settings.bands.meeting;
+}
+$('saveSettings').addEventListener('click', () => {
+  const team = $('setTeam').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const aliases = {}; const bad = [];
+  $('setAliases').value.split('\n').forEach(line => {
+    if (!line.trim()) return;
+    const i = line.indexOf('=');
+    const k = i > 0 ? line.slice(0, i).trim().toLowerCase() : '';
+    const v = i > 0 ? line.slice(i + 1).trim() : '';
+    const full = team.find(t => t.toLowerCase() === v.toLowerCase());
+    if (k && full) aliases[k] = full; else bad.push(line.trim());
+  });
+  const w = { tickets: +$('wT').value || 0, calls: +$('wC').value || 0, direct: +$('wD').value || 0 };
+  const b = { above: +$('bA').value || 0, meeting: +$('bM').value || 0 };
+  if (!team.length) { $('setMsg').textContent = 'Add at least one team member.'; return; }
+  if (w.tickets + w.calls + w.direct !== 100) { $('setMsg').textContent = 'The three weights need to add up to 100 (now ' + (w.tickets + w.calls + w.direct) + ').'; return; }
+  if (b.meeting >= b.above) { $('setMsg').textContent = 'The Meeting Expectations number must be lower than Above Expectations.'; return; }
+  settings = { team, aliases, weights: w, bands: b, version: 2 };
+  storeSettings(); fillSettingsForm(); render();
+  $('setMsg').textContent = bad.length ? 'Saved. Skipped lines whose full name is not in the team list: ' + bad.join('; ') : 'Saved.';
+});
+$('resetSettings').addEventListener('click', () => {
+  settings = JSON.parse(JSON.stringify(C.DEFAULT_SETTINGS)); storeSettings(); fillSettingsForm(); render();
+  $('setMsg').textContent = 'Defaults restored.';
+});
+
+/* ---------- intake ---------- */
+let loaded = [];   // {fileName, tables:[{kind,headers,rows,sheetName,fileName}], ignored:[sheet names], error}
+let monthChoice = null;
+let reportMonth = 'Report';
+let otherMonthRows = 0;
+
+$('pick').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+const drop = $('drop');
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+
+async function addFiles(list){
+  if (typeof XLSX === 'undefined') { toast('The spreadsheet reader did not load. Check your connection and reload the page.'); return; }
+  for (const f of Array.from(list)) {
+    const entry = { fileName: f.name, tables: [], ignored: [], error: null };
+    try {
+      const buf = await f.arrayBuffer();
+      const isCsv = /\.csv$/i.test(f.name);
+      const wb = XLSX.read(buf, { type: 'array', raw: isCsv });
+      wb.SheetNames.forEach(n => {
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: '' });
+        const t = C.findTable(rows);
+        if (t) { t.sheetName = n; t.fileName = f.name; entry.tables.push(t); } else entry.ignored.push(n);
+      });
+      if (!entry.tables.length) entry.error = 'No Freshdesk, CRM, CiCi’s L1 or call log columns found.';
+    } catch (err) { entry.error = 'Could not read this file (' + (err && err.message ? err.message : 'unknown error') + ').'; }
+    loaded = loaded.filter(x => x.fileName !== entry.fileName);   // re-adding replaces
+    loaded.push(entry);
+  }
+  monthChoice = null;
+  render();
+}
+
+const KIND_ORDER = ['freshdesk', 'crm', 'cici', 'calls'];
+const KIND_LABEL = { freshdesk: 'Freshdesk', crm: 'CRM', cici: 'CiCi’s L1', calls: 'Call log' };
+
+function renderIntake(){
+  const filesEl = $('files'); filesEl.replaceChildren();
+  loaded.forEach(entry => {
+    const desc = entry.error ? entry.error
+      : entry.tables.map(t => KIND_LABEL[t.kind] + ' (' + t.rows.length + ' rows)').join(', ');
+    filesEl.append(h('li', null,
+      h('span', null, h('strong', null, entry.fileName), ': ', desc),
+      h('button', { class: 'btn small', type: 'button', 'aria-label': 'Remove ' + entry.fileName,
+        onclick: () => { loaded = loaded.filter(x => x !== entry); monthChoice = null; render(); } }, 'Remove')));
+  });
+  const slots = $('slots'); slots.replaceChildren();
+  KIND_ORDER.forEach(kind => {
+    const found = [];
+    loaded.forEach(e => e.tables.filter(t => t.kind === kind).forEach(t => found.push(t)));
+    const ready = found.length > 0;
+    slots.append(h('div', { class: 'slot' + (ready ? ' ready' : '') },
+      h('span', { class: 'tick' }, ready ? 'Added' : 'Missing'),
+      h('div', { class: 'name' }, KIND_LABEL[kind]),
+      h('div', { class: 'state' }, ready
+        ? found.map(t => t.fileName + ', tab “' + t.sheetName + '”: ' + t.rows.length + ' rows').join('; ')
+        : 'Waiting for this report')));
+  });
+}
+
+/* ---------- results ---------- */
+let current = null;
+function render(){
+  renderIntake();
+  const tables = loaded.flatMap(e => e.tables);
+  const kinds = new Set(tables.map(t => t.kind));
+  const notice = $('intakeNotice'); notice.replaceChildren();
+  const hasTickets = kinds.has('freshdesk') || kinds.has('crm') || kinds.has('cici');
+  if (!tables.length) { $('results').hidden = true; $('empty').hidden = false; current = null; return; }
+  const missing = KIND_ORDER.filter(k => !kinds.has(k)).map(k => KIND_LABEL[k]);
+  if (missing.length) notice.append(h('div', { class: 'notice' }, 'Not added yet: ' + missing.join(', ') + '. Scores are calculated from the reports that are here.'));
+  const noCsr = tables.filter(t => t.kind === 'freshdesk' && t.headers.indexOf('csr team member') === -1);
+  if (noCsr.length) notice.append(h('div', { class: 'notice' },
+    'Freshdesk tickets are counted by the “CSR Team Member” column, and this file has no such column, so its tickets are not counted: ',
+    noCsr.map(t => t.fileName + ' (tab “' + t.sheetName + '”)').join(', '),
+    '. Use the Freshdesk export from the sync sheet, which includes CSR Team Member.'));
+  if (!hasTickets && !kinds.has('calls')) { $('results').hidden = true; $('empty').hidden = false; return; }
+  $('empty').hidden = true; $('results').hidden = false;
+
+  // month options
+  const probe = C.compute(tables, settings, 'all');
+  const months = Array.from(new Set(probe.months.concat(probe.callMonths))).sort();
+  // Default: count only rows dated in the report month (the month most rows belong to)
+  const mainMonth = C.defaultMonth(Object.assign({}, probe.monthsSeen, ...probe.callMonths.map(m => ({ [m]: (probe.monthsSeen[m] || 0) }))));
+  reportMonth = mainMonth !== 'all' ? C.monthLabel(mainMonth) : (months.length ? C.monthLabel(months[months.length - 1]) : 'Report');
+  if (!monthChoice || (monthChoice !== 'all' && months.indexOf(monthChoice) === -1)) monthChoice = mainMonth !== 'all' ? mainMonth : 'all';
+  const sel = $('month'); sel.replaceChildren();
+  months.forEach(m => sel.append(h('option', { value: m }, 'Dated ' + C.monthLabel(m) + (m === mainMonth ? ' (report month)' : ''))));
+  sel.append(h('option', { value: 'all' }, 'Every row in the files'));
+  sel.value = monthChoice;
+
+  const r = C.compute(tables, settings, monthChoice);
+  current = r;
+  const monthText = monthChoice === 'all' ? reportMonth : C.monthLabel(monthChoice);
+  otherMonthRows = monthChoice === 'all' && mainMonth !== 'all'
+    ? Object.keys(probe.monthsSeen).filter(k => k && k !== mainMonth).reduce((s, k) => s + probe.monthsSeen[k], 0) : 0;
+  $('resultsTitle').textContent = 'Team productivity, ' + monthText;
+  $('resultsSub').textContent = r.members.length + ' team members. Every ticket and call is counted once in team totals; each member gets full credit for every shared ticket or call.';
+
+  const T = r.teamTotals;
+  fillMini($('tTickets'), [['Direct', T.direct], ['Escalated', T.escalated]], ['Total tickets', T.total]);
+  fillMini($('tCalls'), [['Inbound calls', T.inbound], ['Outbound calls', T.outbound], ['Missed calls', T.missed], ['Attempted calls', T.attempted], ['Completed calls', T.completed]]);
+  const src = $('tSources'); src.replaceChildren(
+    h('thead', null, h('tr', null, h('th', null, 'Source'), h('th', { class: 'n' }, 'Direct'), h('th', { class: 'n' }, 'Escalated'), h('th', { class: 'n' }, 'Total'))),
+    h('tbody', null,
+      ['crm', 'freshdesk', 'cici'].map(k => h('tr', null, h('td', null, KIND_LABEL[k]), h('td', { class: 'n' }, T.bySource[k].direct), h('td', { class: 'n' }, T.bySource[k].escalated), h('td', { class: 'n' }, T.bySource[k].direct + T.bySource[k].escalated))),
+      h('tr', { class: 'total' }, h('td', null, 'Total'), h('td', { class: 'n' }, T.direct), h('td', { class: 'n' }, T.escalated), h('td', { class: 'n' }, T.total))));
+
+  // ranking
+  const W = settings.weights;
+  $('bandLegend').textContent = 'Dashed lines: ' + settings.bands.meeting + ' and ' + settings.bands.above;
+  const rk = $('ranking'); rk.replaceChildren();
+  r.members.forEach(m => {
+    const cls = m.performance.startsWith('Above') ? 'above' : m.performance.startsWith('Meeting') ? 'meeting' : 'below';
+    rk.append(h('li', null,
+      h('span', { class: 'who' }, m.name, h('small', null, m.total + ' tickets, ' + m.completed + ' completed calls')),
+      h('div', { class: 'track', role: 'img', 'aria-label': `Total ticket handling ${fmt1(m.ticketScore)} of ${W.tickets}, calling ${fmt1(m.callScore)} of ${W.calls}, direct ticket handling ${fmt1(m.directScore)} of ${W.direct}` },
+        h('span', { class: 't', style: 'width:' + m.ticketScore + '%', title: 'Total ticket handling ' + fmt1(m.ticketScore) }),
+        h('span', { class: 'c', style: 'width:' + m.callScore + '%', title: 'Calling ' + fmt1(m.callScore) }),
+        h('span', { class: 'd', style: 'width:' + m.directScore + '%', title: 'Direct ticket handling ' + fmt1(m.directScore) }),
+        h('span', { class: 'mark', style: 'left:' + settings.bands.meeting + '%' }),
+        h('span', { class: 'mark', style: 'left:' + settings.bands.above + '%' })),
+      h('span', { class: 'score' }, fmt1(m.score)),
+      h('span', { class: 'perf' }, h('span', { class: 'chip ' + cls }, m.performance))));
+  });
+
+  // detail table
+  const cols = [
+    ['CRM', m => m.crm], ['Freshdesk', m => m.freshdesk], ['CiCi’s L1', m => m.cici],
+    ['Direct', m => m.direct], ['Escalated', m => m.escalated], ['Total tickets', m => m.total],
+    ['Inbound', m => m.inbound], ['Outbound', m => m.outbound], ['Missed', m => m.missed], ['Attempted', m => m.attempted], ['Completed', m => m.completed],
+    ['Total ticket handling /' + W.tickets, m => fmt1(m.ticketScore), 'ts'], ['Calling /' + W.calls, m => fmt1(m.callScore), 'cs'],
+    ['Direct ticket handling /' + W.direct, m => fmt1(m.directScore), 'ds'], ['Overall /100', m => fmt1(m.score), 'tot'],
+    ['Performance', m => m.performance]];
+  const sumCol = i => r.members.reduce((s, m) => s + (+cols[i][1](m) || 0), 0);
+  const teamVals = [T.bySource.crm.direct + T.bySource.crm.escalated, T.bySource.freshdesk.direct + T.bySource.freshdesk.escalated,
+    T.bySource.cici.direct + T.bySource.cici.escalated,
+    T.direct, T.escalated, T.total, T.inbound, T.outbound, T.missed, T.attempted, T.completed];
+  $('detail').replaceChildren(
+    h('thead', null, h('tr', null, h('th', null, 'Team member'), cols.map(c => h('th', { class: c[2] || '' }, c[0])))),
+    h('tbody', null, r.members.map(m => h('tr', null, h('td', null, m.name), cols.map(c => h('td', { class: c[2] || '' }, c[1](m)))))),
+    h('tfoot', null,
+      h('tr', null, h('td', null, 'Team total (each ticket once)'), teamVals.map(v => h('td', null, v)),
+        h('td', null, ''), h('td', null, ''), h('td', null, ''), h('td', null, fmt1(r.members.reduce((s, m) => s + m.score, 0) / Math.max(r.members.length, 1)) + ' avg'), h('td', null, '')),
+      h('tr', { class: 'sub' }, h('td', null, 'Sum of member rows'), cols.slice(0, 11).map((c, i) => h('td', null, sumCol(i))), h('td', { colspan: 5 }, ''))));
+  $('detailFoot').textContent = 'Total ticket handling = member’s tickets ÷ highest in team × ' + W.tickets + '. Calling = completed calls ÷ highest in team × ' + W.calls +
+    '. Direct ticket handling = direct ÷ member’s total tickets × ' + W.direct + '. Sum of member rows is higher than the team total when several members worked the same ticket.';
+
+  // data check
+  const ck = r.checks;
+  const dl = $('checkList'); dl.replaceChildren();
+  const row = (k, v) => dl.append(h('dt', null, k), h('dd', null, v));
+  row('Unique tickets counted', T.total);
+  row('Tickets worked by 2 or more members (full credit to each)', ck.sharedTickets);
+  row('of which CRM / Freshdesk / CiCi’s L1', ck.sharedBySource.crm + ' / ' + ck.sharedBySource.freshdesk + ' / ' + ck.sharedBySource.cici);
+  row('Tickets without a ticket number (N/A), included', ck.naTickets);
+  row('Repeated ticket rows merged', ck.duplicateTicketRows);
+  row('Tickets closed as “Duplicate ticket”, left out', ck.closedAsDuplicate.length ? ck.closedAsDuplicate.length + ' (' + ck.closedAsDuplicate.join(', ') + ')' : 0);
+  row('CRM / CiCi’s L1 tickets with no team member (blank, NA or someone else), left out', ck.noMember.crm + ck.noMember.cici);
+  if (kinds.has('freshdesk')) {
+    row('Freshdesk tickets credited by', 'CSR Team Member');
+    row('Freshdesk tickets with 2 or more CSR Team Members', ck.sharedBySource.freshdesk);
+    row('Freshdesk tickets with no team member in CSR Team Member (blank, NA or someone else), not counted', ck.noMember.freshdesk);
+    if (ck.fdRowsNoColumn) row('Freshdesk rows in files without a CSR Team Member column, not counted', ck.fdRowsNoColumn);
+  }
+  row('Team calls counted', T.calls);
+  row('Calls with 2 or more team members (full credit to each)', ck.sharedCalls);
+  row('Repeated call rows ignored', ck.duplicateCalls);
+  row('Calls by people outside the team', ck.callsNotTeam);
+  if (monthChoice !== 'all') row('Ticket rows dated outside ' + C.monthLabel(monthChoice) + ' (e.g. 31st of the previous month), left out', ck.outsideMonth);
+  else if (otherMonthRows) row('Ticket rows dated outside ' + reportMonth + ' (e.g. 31st of the previous month), included as in your files', otherMonthRows);
+  if (ck.undatedTickets || ck.undatedCalls) row('Rows with an unreadable date, kept in', ck.undatedTickets + ck.undatedCalls);
+
+  const uw = $('unknownWrap'); uw.replaceChildren();
+  const names = Object.keys(r.unknownNames).sort((a, b) => a.localeCompare(b));
+  if (!names.length) uw.append(h('p', { style: 'color:var(--muted);font-size:14px' }, 'Every name in the reports matched a team member.'));
+  else {
+    uw.append(h('p', { style: 'color:var(--muted);font-size:13px' }, 'These names were not counted. If one is a team member’s nickname, choose who it is and the report updates.'));
+    uw.append(h('table', { class: 'unknown' }, h('tbody', null, names.map(n => {
+      const srcs = r.unknownNames[n]; const cnt = Object.keys(srcs).map(s => s + ' ' + srcs[s]).join(', ');
+      const s = h('select', { 'aria-label': 'Who is ' + n, onchange: e => {
+        if (!e.target.value) return;
+        settings.aliases[n.toLowerCase()] = e.target.value; storeSettings(); fillSettingsForm(); render(); toast('“' + n + '” now counts as ' + e.target.value + '.');
+      } }, h('option', { value: '' }, 'Not a team member'), settings.team.map(t => h('option', { value: t }, t)));
+      return h('tr', null, h('td', null, h('strong', null, n)), h('td', { style: 'color:var(--muted);font-size:13px' }, cnt), h('td', { style: 'text-align:right' }, s));
+    }))));
+  }
+}
+
+function fillMini(table, rows, totalRow){
+  table.replaceChildren(h('tbody', null,
+    rows.map(([k, v]) => h('tr', null, h('td', null, k), h('td', { class: 'n' }, v))),
+    totalRow ? h('tr', { class: 'total' }, h('td', null, totalRow[0]), h('td', { class: 'n' }, totalRow[1])) : null));
+}
+
+$('month').addEventListener('change', e => { monthChoice = e.target.value; render(); });
+
+/* ---------- Excel export ---------- */
+// Inside Claude the page saves through the downloads capability; anywhere else
+// (GitHub Pages, a local file) it uses a normal browser download.
+let saveFile = null;
+const inClaude = !!(window.claude && typeof window.claude.use === 'function');
+if (inClaude) {
+  window.claude.use('downloads').then(d => {
+    if (d) { saveFile = (name, blob) => d.save({ filename: name, data: blob }); $('download').hidden = false; }
+  }).catch(() => {});
+} else {
+  saveFile = async (name, blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = h('a', { href: url, download: name, style: 'display:none' });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return { status: 'saved' };
+  };
+  $('download').hidden = false;
+}
+$('download').addEventListener('click', async () => {
+  if (!current || !saveFile) return;
+  if (typeof ExcelJS === 'undefined') { toast('The Excel writer did not load. Check your connection and reload the page.'); return; }
+  const btn = $('download'); btn.disabled = true; const label = btn.textContent; btn.textContent = 'Preparing…';
+  try {
+    const monthText = monthChoice === 'all' ? reportMonth : C.monthLabel(monthChoice);
+    const d = new Date();
+    const wb = window.CSRExport.build(ExcelJS, current, settings, {
+      monthText,
+      generated: d.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getFullYear(),
+      files: loaded.filter(e => e.tables.length).map(e => ({ name: e.fileName,
+        desc: e.tables.map(t => KIND_LABEL[t.kind].replace('’', "'") + ' (' + t.rows.length + ' rows)').join(', ') })),
+    });
+    const buf = await wb.xlsx.writeBuffer();
+    const fname = 'CSR_Productivity_Report_' + monthText.replace(/\s+/g, '_') + '.xlsx';
+    await saveFile(fname, new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    toast('Saved ' + fname);
+  } catch (err) {
+    const code = err && err.code;
+    if (code === 'declined') { /* viewer said no */ }
+    else if (code === 'rate_limited') toast('A save prompt is already open.');
+    else toast('The Excel file could not be created (' + ((err && err.message) || 'unknown error') + ').');
+  } finally { btn.disabled = false; btn.textContent = label; }
+});
+
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3200); }
+
+fillSettingsForm();
+render();
+})();
+</script>
+</body>
+</html>
